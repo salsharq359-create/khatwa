@@ -1,0 +1,33 @@
+[project]
+name = "khatwa"
+version = "0.1.0"
+description = "خطوة: خطوة صغيرة كل يوم لكسر العجز المتعلم"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "flet>=1.1.2",
+    "flet-notifications>=1.1.2",
+]
+
+[dependency-groups]
+dev = [
+    "flet-cli>=1.1.2",
+    "flet-desktop>=1.1.2",
+    "flet-web>=1.1.2",
+    "pytest>=8",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+
+[tool.flet]
+org = "com.khatwa"
+product = "Khatwa"
+company = "Khatwa"
+copyright = "Khatwa"
+# لون الخلفية وراء الأيقونة (iOS وأندرويد)
+icon_background = "#2B7363"
+
+[tool.flet.app]
+path = "src"
