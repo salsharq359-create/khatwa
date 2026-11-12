@@ -50,22 +50,6 @@ jobs:
           path: build/apk/*.apk
           if-no-files-found: error
 
-  # يدوي فقط (Actions > Build > Run workflow): يستهلك دقايق macOS أكثر.
-  # يبني نسخة محاكي بدون توقيع للتأكد إن الكود يترجم على iOS (ما تتركب على جوال حقيقي).
-  # للجوال الحقيقي استخدم الـ job اللي بعده: ios-ipa.
-  ios:
-    if: github.event_name == 'workflow_dispatch'
-    needs: test
-    runs-on: macos-latest
-    timeout-minutes: 60
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - run: pip install "flet-cli>=1.1.2"
-      - run: flet build ios-simulator --yes
-
   # يدوي فقط. يبني ملف IPA غير موقّع تركّبه على آيفون حقيقي بـ Sideloadly (حساب Apple مجاني).
   # Sideloadly يوقّعه بحسابك، والتطبيق ينتهي بعد 7 أيام ويحتاج إعادة تركيب.
   # ما انجرّب بعد على macOS: إذا فشلت خطوة، انسخ آخر أسطر السجل وأصلحها.
