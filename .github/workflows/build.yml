@@ -56,7 +56,7 @@ jobs:
   ios-ipa:
     if: github.event_name == 'workflow_dispatch'
     needs: test
-    runs-on: macos-latest
+    runs-on: macos-15-intel
     timeout-minutes: 90
     steps:
       - uses: actions/checkout@v4
