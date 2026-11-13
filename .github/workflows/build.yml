@@ -88,9 +88,9 @@ jobs:
           set -x
           echo "--- all .app folders under build ---"
           find build -type d -name "*.app" 2>/dev/null | head -20
-          APP=$(find build -type d -name Runner.app -path "*iphoneos*" 2>/dev/null | head -1)
+          APP=$(find build -path "*Release-iphoneos*" -type d -name "*.app" -prune -print 2>/dev/null | head -1)
           echo "Found: $APP"
-          if [ -z "$APP" ]; then echo "Runner.app not found"; exit 1; fi
+          if [ -z "$APP" ]; then echo "app folder not found"; exit 1; fi
           rm -rf Payload khatwa.ipa
           mkdir Payload
           cp -R "$APP" Payload/
