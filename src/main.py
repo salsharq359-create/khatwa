@@ -9,6 +9,7 @@ import flet as ft
 import flet_notifications as ftn
 
 from store import FOCUSES, Store
+from thoughts_ai import suggest
 
 BG = "#F6F3EE"
 INK = "#1F2A28"
@@ -87,6 +88,7 @@ class App:
         self.focus = FOCUSES[0]
         self.mood = 3
         self.energy = 3
+        self.suggestion = None
 
         # الحقول كائنات ثابتة عشان النص المكتوب ما يضيع لما نعيد الرسم.
         self.name_field = ft.TextField(hint_text="اكتب اسمك", filled=True, bgcolor=WHITE, border_radius=14)
@@ -252,8 +254,45 @@ class App:
             return
         for f in (self.thought_field, self.evidence_field, self.alt_field, self.step_field):
             f.value = ""
+        self.suggestion = None
         self.toast("انحفظت. خطوة حلوة.")
         self.render()
+
+    def ask_suggestions(self, e=None):
+        if not (self.thought_field.value or "").strip():
+            self.toast("اكتب الفكرة أول، وبعدها اطلب البدائل.")
+            return
+        self.suggestion = suggest(self.thought_field.value)
+        self.render()
+
+    def use_text(self, field, text: str):
+        field.value = text
+        self.toast("انحطت في الخانة. عدّليها بكلامك.")
+        self.render()
+
+    def suggestion_cards(self):
+        sg = self.suggestion
+        if sg is None:
+            return []
+        if sg.crisis:
+            return [card(label(sg.message, 16, W600, DARK_GREEN), bgcolor=MINT, border=False, padding=18, radius=18)]
+        out = []
+        for title, explain in sg.patterns:
+            out.append(card(ft.Column([label(title, 16, W700, DARK_GREEN), label(explain, 14, color=SUB)], spacing=4),
+                            bgcolor=MINT, border=False, padding=14, radius=16))
+        out.append(label("أسئلة تفحصين فيها الفكرة", 14, W600, MUTED))
+        for q in sg.evidence:
+            out.append(label("• " + q, 14, color=SUB))
+        out.append(label("بدائل واقعية (اضغطي على اللي يناسبك)", 14, W600, MUTED))
+        for alt in sg.alternatives:
+            out.append(card(label(alt, 15, color=INK), padding=14, radius=16, ink=True,
+                            on_click=lambda e, t=alt: self.use_text(self.alt_field, t)))
+        out.append(label("خطوات صغيرة (5 دقايق)", 14, W600, MUTED))
+        for step in sg.steps:
+            out.append(card(label(step, 15, color=INK), padding=14, radius=16, ink=True,
+                            on_click=lambda e, t=step: self.use_text(self.step_field, t)))
+        out.append(label("هذي اقتراحات جاهزة من قواعد التطبيق وما هي ذكاء توليدي، فعدّليها بكلامك.", 12, color=MUTED))
+        return out
 
     def set_mood(self, v: int):
         self.mood = v
@@ -393,6 +432,8 @@ class App:
             label("مفكرة الأفكار", 26, W700),
             label("3 أسئلة بس، وتشوف الفكرة بشكل ثاني.", 14, color=MUTED),
             card(ft.Column([label("الفكرة اللي في بالك", 14, W600, MUTED), self.thought_field], spacing=6), padding=16),
+            big_button("اقترح لي بدائل", self.ask_suggestions, bg=MINT, fg=DARK_GREEN),
+            *self.suggestion_cards(),
             self._question(1, "شنو الدليل؟", self.evidence_field),
             self._question(2, "شنو البديل الواقعي؟", self.alt_field),
             self._question(3, "شنو أصغر خطوة؟", self.step_field),
