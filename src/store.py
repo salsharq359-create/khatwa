@@ -159,13 +159,25 @@ class Store:
         return True
 
     # ---------- المزاج ----------
-    def add_mood(self, mood: int, energy: int) -> None:
+    def mood_today(self):
+        """تسجيل اليوم (مزاج وطاقة) إذا انحفظ، وإلا None."""
+        today = self._now().date().isoformat()
+        for m in self.data["moods"]:
+            if m["at"][:10] == today:
+                return m
+        return None
+
+    def add_mood(self, mood: int, energy: int) -> bool:
+        """يحفظ تسجيل واحد بس باليوم. يرجع False إذا اليوم انسجّل قبل."""
+        if self.mood_today() is not None:
+            return False
         mood = min(5, max(1, int(mood)))
         energy = min(5, max(1, int(energy)))
         self.data["moods"].insert(
             0, {"mood": mood, "energy": energy, "at": self._now().isoformat(timespec="seconds")}
         )
         self.save()
+        return True
 
     def recent_energy(self) -> list[int]:
         """آخر ٧ قيم للطاقة (الأقدم أول)."""
