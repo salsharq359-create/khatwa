@@ -101,9 +101,21 @@ def test_mood_clamped_and_recent_energy_order(store, clock):
     assert store.data["moods"][0]["mood"] == 5
     assert store.data["moods"][0]["energy"] == 1
     for e in (2, 3, 4):
-        clock.advance(hours=1)
+        clock.advance(days=1)
         store.add_mood(3, e)
     assert store.recent_energy() == [1, 2, 3, 4]  # الأقدم أول
+
+
+def test_mood_only_once_per_day(store, clock):
+    assert store.mood_today() is None
+    assert store.add_mood(4, 2) is True
+    assert store.mood_today()["energy"] == 2
+    clock.advance(hours=5)
+    assert store.add_mood(1, 1) is False          # نفس اليوم: ما ينحفظ
+    assert len(store.data["moods"]) == 1 and store.data["moods"][0]["mood"] == 4
+    clock.advance(days=1)
+    assert store.mood_today() is None
+    assert store.add_mood(2, 3) is True
 
 
 def test_persistence_roundtrip(tmp_path, clock):
